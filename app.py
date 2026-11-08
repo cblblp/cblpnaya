@@ -17,19 +17,39 @@ st.set_page_config(
     page_title="Тренажёр · Топографическая анатомия",
     page_icon="🩺",
     layout="centered",
+    initial_sidebar_state="expanded",
 )
+
+# ---------------------------------------------------------------
+# CSS — аккуратный вид, крупные кнопки
+# ---------------------------------------------------------------
+st.markdown("""
+<style>
+    .stButton > button {
+        width: 100%;
+        border-radius: 10px;
+        padding: 0.6em 1em;
+        font-size: 1rem;
+    }
+    div[data-testid="stCheckbox"] {
+        padding: 6px 0;
+    }
+    h1, h2, h3 { margin-top: 0.4em; }
+    .block-container { padding-top: 2rem; }
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------
 # СЕССИОННОЕ СОСТОЯНИЕ
 # ---------------------------------------------------------------
 def init_state():
     defaults = {
-        "page": "menu",          # menu | quiz | result
-        "theme_key": None,       # ключ темы
-        "questions": [],         # подготовленные вопросы (перемешанные)
-        "idx": 0,                # текущий индекс
-        "answers": {},           # {idx: set(индексов выбранных opts)}
-        "show_feedback": False,  # показывать ли разбор текущего вопроса
+        "page": "menu",           # menu | quiz | result
+        "theme_key": None,
+        "questions": [],
+        "idx": 0,
+        "answers": {},            # {idx: set(индексов)}
+        "show_feedback": False,
         "shuffle_opts": True,
         "shuffle_q": True,
     }
@@ -40,87 +60,30 @@ def init_state():
 
 init_state()
 
-# ---------------------------------------------------------------
-# ПОДГОТОВКА ВОПРОСОВ
-# ---------------------------------------------------------------
-def prepare_questions(theme_key, shuffle_q: bool, shuffle_opts: bool):
-    """
-    Возвращает список вопросов в формате:
-    {
-      "q": "...",
-      "opts": [текст1, текст2, ...],   # уже перемешанные
-      "ans": {индексы правильных в новом opts},
-    }
-    """
-    raw = THEMES[theme_key]["questions"]
-    prepared = []
+LETTERS = ["А", "Б", "В", "Г", "Д", "Е", "Ж", "З"]
 
-    for item in raw:
-        q_text = item["q"]
-        # список (текст, флаг_правильный)
+
+# ---------------------------------------------------------------
+# ПОДГОТОВКА ВОПРОСОВ (с перемешиванием)
+# ---------------------------------------------------------------
+def prepare_questions(raw_questions, shuffle_q: bool, shuffle_opts: bool):
+    prepared = []
+    for item in raw_questions:
         pairs = [(opt, i in item["ans"]) for i, opt in enumerate(item["opts"])]
         if shuffle_opts:
             random.shuffle(pairs)
         new_opts = [t for t, _ in pairs]
         new_ans = {i for i, (_, flag) in enumerate(pairs) if flag}
-        prepared.append({
-            "q": q_text,
-            "opts": new_opts,
-            "ans": new_ans,
-        })
-
+        prepared.append({"q": item["q"], "opts": new_opts, "ans": new_ans})
     if shuffle_q:
         random.shuffle(prepared)
-
     return prepared
 
 
-# ---------------------------------------------------------------
-# ЭКРАН: МЕНЮ
-# ---------------------------------------------------------------
-def render_menu():
-    st.title("🩺 Тренажёр по топографической анатомии")
-    st.caption("Оперативная хирургия · тесты для педиатрического факультета")
-
-    st.subheader("Настройки")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.session_state.shuffle_opts = st.toggle(
-            "Перемешивать варианты ответов",
-            value=st.session_state.shuffle_opts,
-        )
-    with col2:
-        st.session_state.shuffle_q = st.toggle(
-            "Перемешивать порядок вопросов",
-            value=st.session_state.shuffle_q,
-        )
-
-    st.subheader("Выбор темы")
-    theme_keys = sorted(THEMES.keys(), key=lambda x: int(x))
-    labels = [f"{k}. {THEMES[k]['title']} ({len(THEMES[k]['questions'])} вопр.)"
-              for k in theme_keys]
-    choice = st.selectbox("Тема", labels, index=0)
-    theme_key = theme_keys[labels.index(choice)]
-
-    col_a, col_b = st.columns([1, 1])
-    with col_a:
-        if st.button("▶ Начать тему", type="primary", use_container_width=True):
-            start_quiz(theme_key)
-    with col_b:
-        if st.button("🔀 Пройти всё подряд", use_container_width=True):
-            start_all()
-
-    st.divider()
-    st.caption("Совет: включи перемешивание — так честнее тренироваться.")
-
-
-# ---------------------------------------------------------------
-# ЗАПУСК ТЕСТА
-# ---------------------------------------------------------------
 def start_quiz(theme_key):
     st.session_state.theme_key = theme_key
     st.session_state.questions = prepare_questions(
-        theme_key,
+        THEMES[theme_key]["questions"],
         shuffle_q=st.session_state.shuffle_q,
         shuffle_opts=st.session_state.shuffle_opts,
     )
@@ -132,25 +95,15 @@ def start_quiz(theme_key):
 
 
 def start_all():
-    # Собираем вопросы из всех тем
-    all_questions = []
+    all_q = []
     for key in sorted(THEMES.keys(), key=lambda x: int(x)):
-        all_questions.extend(THEMES[key]["questions"])
-    # Перемешиваем
-    if st.session_state.shuffle_q:
-        random.shuffle(all_questions)
-
-    prepared = []
-    for item in all_questions:
-        pairs = [(opt, i in item["ans"]) for i, opt in enumerate(item["opts"])]
-        if st.session_state.shuffle_opts:
-            random.shuffle(pairs)
-        new_opts = [t for t, _ in pairs]
-        new_ans = {i for i, (_, flag) in enumerate(pairs) if flag}
-        prepared.append({"q": item["q"], "opts": new_opts, "ans": new_ans})
-
+        all_q.extend(THEMES[key]["questions"])
     st.session_state.theme_key = "__all__"
-    st.session_state.questions = prepared
+    st.session_state.questions = prepare_questions(
+        all_q,
+        shuffle_q=st.session_state.shuffle_q,
+        shuffle_opts=st.session_state.shuffle_opts,
+    )
     st.session_state.idx = 0
     st.session_state.answers = {}
     st.session_state.show_feedback = False
@@ -159,11 +112,59 @@ def start_all():
 
 
 # ---------------------------------------------------------------
-# ЭКРАН: ВОПРОС
+# САЙДБАР
 # ---------------------------------------------------------------
-LETTERS = ["А", "Б", "В", "Г", "Д", "Е", "Ж", "З"]
+def render_sidebar():
+    with st.sidebar:
+        st.header("⚙️ Настройки")
+        st.session_state.shuffle_opts = st.toggle(
+            "Перемешивать варианты ответов",
+            value=st.session_state.shuffle_opts,
+        )
+        st.session_state.shuffle_q = st.toggle(
+            "Перемешивать порядок вопросов",
+            value=st.session_state.shuffle_q,
+        )
+        st.divider()
+        st.caption(
+            f"Всего тем: {len(THEMES)}\n\n"
+            f"Всего вопросов: {sum(len(t['questions']) for t in THEMES.values())}"
+        )
+        st.divider()
+        if st.session_state.page != "menu":
+            if st.button("🏠 В меню", use_container_width=True):
+                st.session_state.page = "menu"
+                st.rerun()
 
 
+# ---------------------------------------------------------------
+# МЕНЮ
+# ---------------------------------------------------------------
+def render_menu():
+    st.title("🩺 Тренажёр по топографической анатомии")
+    st.caption("Оперативная хирургия · тесты для педиатрического факультета")
+
+    st.subheader("Выбор темы")
+    theme_keys = sorted(THEMES.keys(), key=lambda x: int(x))
+    labels = [
+        f"{k}. {THEMES[k]['title']} — {len(THEMES[k]['questions'])} вопр."
+        for k in theme_keys
+    ]
+    choice = st.selectbox("Тема", labels, index=0, label_visibility="collapsed")
+    theme_key = theme_keys[labels.index(choice)]
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("▶ Начать тему", type="primary", use_container_width=True):
+            start_quiz(theme_key)
+    with col2:
+        if st.button("🔀 Все темы подряд", use_container_width=True):
+            start_all()
+
+
+# ---------------------------------------------------------------
+# ЭКРАН ВОПРОСА
+# ---------------------------------------------------------------
 def render_quiz():
     qs = st.session_state.questions
     idx = st.session_state.idx
@@ -176,47 +177,56 @@ def render_quiz():
 
     q = qs[idx]
 
-    st.progress((idx) / total)
+    # --- Шапка ---
     theme_title = (
         "Все темы подряд"
         if st.session_state.theme_key == "__all__"
         else THEMES[st.session_state.theme_key]["title"]
     )
-    st.caption(f"{theme_title} · Вопрос {idx + 1} из {total}")
+    st.caption(theme_title)
 
+    progress_val = (idx + (1 if st.session_state.show_feedback else 0)) / total
+    st.progress(progress_val)
+
+    correct_so_far = sum(
+        1 for i, a in st.session_state.answers.items() if a == qs[i]["ans"]
+    )
+    if st.session_state.answers:
+        st.markdown(f"**Вопрос {idx + 1} из {total}** · ✅ верно: {correct_so_far}")
+    else:
+        st.markdown(f"**Вопрос {idx + 1} из {total}**")
+
+    # --- Текст вопроса ---
     st.markdown(f"### {q['q']}")
 
-    key = f"q_{idx}"
     current = st.session_state.answers.get(idx, set())
+    key_prefix = f"q_{idx}"
 
-    # Варианты (чекбоксы)
-    selected = set()
-    for i, opt in enumerate(q["opts"]):
-        checked = i in current
-        if st.checkbox(f"{LETTERS[i]}) {opt}", value=checked, key=f"{key}_{i}"):
-            selected.add(i)
+    # --- Режим выбора ---
+    if not st.session_state.show_feedback:
+        selected = set()
+        for i, opt in enumerate(q["opts"]):
+            checked = i in current
+            if st.checkbox(f"{LETTERS[i]}) {opt}", value=checked, key=f"{key_prefix}_{i}"):
+                selected.add(i)
 
-    st.divider()
-
-    # --- Кнопки ---
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("✅ Ответить", type="primary", use_container_width=True):
-            st.session_state.answers[idx] = selected
-            st.session_state.show_feedback = True
-            st.rerun()
-    with col2:
-        if st.button("➡️ Далее", use_container_width=True):
-            # Сохраняем текущий выбор (даже если не отвечал)
-            st.session_state.answers[idx] = selected
-            st.session_state.idx += 1
-            st.session_state.show_feedback = False
-            st.rerun()
-
-    # --- Разбор ответа (если нажали «Ответить») ---
-    if st.session_state.show_feedback:
         st.divider()
-        user_ans = st.session_state.answers.get(idx, set())
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("✅ Ответить", type="primary", use_container_width=True):
+                st.session_state.answers[idx] = selected
+                st.session_state.show_feedback = True
+                st.rerun()
+        with col2:
+            if st.button("➡️ Далее", use_container_width=True):
+                st.session_state.answers[idx] = selected
+                st.session_state.idx += 1
+                st.session_state.show_feedback = False
+                st.rerun()
+
+    # --- Режим разбора ---
+    else:
+        user_ans = current
         correct = q["ans"]
         ok = user_ans == correct
 
@@ -235,6 +245,7 @@ def render_quiz():
                 mark = "  ✘ ваш ошибочный"
             st.markdown(f"- **{LETTERS[i]})** {opt}{mark}")
 
+        st.divider()
         if st.button("➡️ Следующий вопрос", type="primary", use_container_width=True):
             st.session_state.idx += 1
             st.session_state.show_feedback = False
@@ -242,7 +253,7 @@ def render_quiz():
 
 
 # ---------------------------------------------------------------
-# ЭКРАН: РЕЗУЛЬТАТ
+# РЕЗУЛЬТАТ
 # ---------------------------------------------------------------
 def render_result():
     qs = st.session_state.questions
@@ -255,37 +266,54 @@ def render_result():
         if user == q["ans"]:
             correct_count += 1
         else:
-            mistakes.append((i, q["q"]))
+            mistakes.append((i, q, user))
 
     total = len(qs)
     pct = round(correct_count / total * 100, 1) if total else 0
 
     st.title("📊 Результат")
-    st.metric("Верно", f"{correct_count} / {total}", f"{pct}%")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Верно", f"{correct_count}")
+    col2.metric("Всего", f"{total}")
+    col3.metric("Процент", f"{pct}%")
     st.progress(correct_count / total if total else 0)
 
     if mistakes:
         st.subheader("Вопросы с ошибками")
-        for n, text in mistakes:
-            short = text if len(text) <= 100 else text[:97] + "..."
-            st.markdown(f"- **№{n + 1}:** {short}")
+        for n, q, user in mistakes:
+            short = q["q"] if len(q["q"]) <= 80 else q["q"][:77] + "..."
+            with st.expander(f"№{n + 1}. {short}"):
+                for i, opt in enumerate(q["opts"]):
+                    mark = ""
+                    if i in q["ans"] and i in user:
+                        mark = "  ✅ выбрано верно"
+                    elif i in q["ans"]:
+                        mark = "  ✔ правильный"
+                    elif i in user:
+                        mark = "  ✘ ваш ошибочный"
+                    st.markdown(f"- **{LETTERS[i]})** {opt}{mark}")
     else:
         st.success("🎉 Отлично! Ни одной ошибки.")
 
     st.divider()
-    if st.button("🔁 Пройти ещё раз", use_container_width=True):
-        if st.session_state.theme_key == "__all__":
-            start_all()
-        else:
-            start_quiz(st.session_state.theme_key)
-    if st.button("🏠 В меню", use_container_width=True):
-        st.session_state.page = "menu"
-        st.rerun()
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔁 Пройти ещё раз", use_container_width=True):
+            if st.session_state.theme_key == "__all__":
+                start_all()
+            else:
+                start_quiz(st.session_state.theme_key)
+    with col2:
+        if st.button("🏠 В меню", use_container_width=True):
+            st.session_state.page = "menu"
+            st.rerun()
 
 
 # ---------------------------------------------------------------
 # РОУТИНГ
 # ---------------------------------------------------------------
+render_sidebar()
+
 if st.session_state.page == "menu":
     render_menu()
 elif st.session_state.page == "quiz":
