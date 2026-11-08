@@ -37,33 +37,27 @@ st.markdown("""
     h1, h2, h3 { margin-top: 0.4em; }
     .block-container { padding-top: 2rem; }
 
-    /* Цветные плашки для разбора */
+    /* Цветные плашки для разбора — контрастные в любой теме */
     .opt-row {
-        padding: 8px 12px;
-        margin: 6px 0;
+        padding: 10px 14px;
+        margin: 8px 0;
         border-radius: 8px;
         border-left: 6px solid transparent;
-        line-height: 1.35;
-    }
-    .opt-green {
-        background: #e8f5e9;
-        border-left-color: #2e7d32;
-    }
-    .opt-red {
-        background: #ffebee;
-        border-left-color: #c62828;
-    }
-    .opt-yellow {
-        background: #fff8e1;
-        border-left-color: #f9a825;
-    }
-    .opt-plain {
+        line-height: 1.4;
+        font-size: 1rem;
+        color: #1a1a1a;            /* тёмный текст */
         background: #f5f5f5;
-        border-left-color: #9e9e9e;
     }
+    .opt-row b { color: #000; }
+
+    .opt-green  { background: #c8e6c9; border-left-color: #2e7d32; color: #1b5e20; }
+    .opt-red    { background: #ffcdd2; border-left-color: #c62828; color: #b71c1c; }
+    .opt-yellow { background: #fff59d; border-left-color: #f9a825; color: #6d4c00; }
+    .opt-plain  { background: #eceff1; border-left-color: #9e9e9e; color: #263238; }
+
     .opt-tag {
-        font-weight: 600;
-        margin-left: 6px;
+        font-weight: 700;
+        margin-left: 8px;
         font-size: 0.9em;
     }
 </style>
