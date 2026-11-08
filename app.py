@@ -176,7 +176,6 @@ def render_quiz():
 
     q = qs[idx]
 
-    # Прогресс
     st.progress((idx) / total)
     theme_title = (
         "Все темы подряд"
@@ -185,14 +184,12 @@ def render_quiz():
     )
     st.caption(f"{theme_title} · Вопрос {idx + 1} из {total}")
 
-    # Текст вопроса
     st.markdown(f"### {q['q']}")
 
-    # Варианты
     key = f"q_{idx}"
     current = st.session_state.answers.get(idx, set())
 
-    # Мультивыбор: используем чекбоксы в контейнере
+    # Варианты (чекбоксы)
     selected = set()
     for i, opt in enumerate(q["opts"]):
         checked = i in current
@@ -200,6 +197,8 @@ def render_quiz():
             selected.add(i)
 
     st.divider()
+
+    # --- Кнопки ---
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("✅ Ответить", type="primary", use_container_width=True):
@@ -207,12 +206,14 @@ def render_quiz():
             st.session_state.show_feedback = True
             st.rerun()
     with col2:
-        if st.button("⏭ Пропустить", use_container_width=True):
+        if st.button("➡️ Далее", use_container_width=True):
+            # Сохраняем текущий выбор (даже если не отвечал)
             st.session_state.answers[idx] = selected
-            st.session_state.show_feedback = True
+            st.session_state.idx += 1
+            st.session_state.show_feedback = False
             st.rerun()
 
-    # Разбор ответа
+    # --- Разбор ответа (если нажали «Ответить») ---
     if st.session_state.show_feedback:
         st.divider()
         user_ans = st.session_state.answers.get(idx, set())
@@ -224,7 +225,6 @@ def render_quiz():
         else:
             st.error("❌ Неверно.")
 
-        # показываем разметку
         for i, opt in enumerate(q["opts"]):
             mark = ""
             if i in correct and i in user_ans:
@@ -235,7 +235,7 @@ def render_quiz():
                 mark = "  ✘ ваш ошибочный"
             st.markdown(f"- **{LETTERS[i]})** {opt}{mark}")
 
-        if st.button("➡ Следующий вопрос", type="primary", use_container_width=True):
+        if st.button("➡️ Следующий вопрос", type="primary", use_container_width=True):
             st.session_state.idx += 1
             st.session_state.show_feedback = False
             st.rerun()
