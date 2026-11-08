@@ -82,6 +82,7 @@ st.markdown("""
         margin-left: 8px;
         font-size: 0.9em;
     }
+    div[data-testid="stCheckbox"] { min-height: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
