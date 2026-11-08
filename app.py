@@ -34,12 +34,12 @@ st.markdown("""
     h1, h2, h3 { margin-top: 0.4em; }
     .block-container { padding-top: 2rem; }
 
-    /* ===== ЕДИНАЯ КАРТОЧКА ВАРИАНТА ===== */
+    /* ===== БАЗОВЫЙ СТИЛЬ (светлая тема) ===== */
     .opt-card,
     div[data-testid="stCheckbox"] {
         box-sizing: border-box;
         padding: 12px 16px !important;
-        margin: 6px 0 !important;        /* одинаковый шаг между карточками */
+        margin: 6px 0 !important;
         border-radius: 10px !important;
         border-left: 6px solid #9e9e9e !important;
         background: #eceff1 !important;
@@ -47,8 +47,6 @@ st.markdown("""
         font-size: 1rem !important;
         line-height: 1.4 !important;
     }
-
-    /* Текст внутри карточки-чекбокса */
     div[data-testid="stCheckbox"] label,
     div[data-testid="stCheckbox"] label p,
     div[data-testid="stCheckbox"] p {
@@ -57,32 +55,45 @@ st.markdown("""
         margin: 0 !important;
         padding: 0 !important;
     }
-
-    /* Убираем лишние внутренние отступы Streamlit */
     div[data-testid="stCheckbox"] > div,
     div[data-testid="stCheckbox"] > div > div {
         padding: 0 !important;
         margin: 0 !important;
     }
 
-    /* Убираем «распорку» — Streamlit иногда добавляет пустой блок снизу */
-    div[data-testid="stCheckbox"] + div[data-testid="stVerticalBlockBorderWrapper"] {
-        display: none !important;
-    }
-
-    /* Цвета состояний */
+    /* Цвета (светлая тема) */
     .opt-green  { background: #c8e6c9 !important; border-left-color: #2e7d32 !important; color: #1b5e20 !important; }
     .opt-red    { background: #ffcdd2 !important; border-left-color: #c62828 !important; color: #b71c1c !important; }
     .opt-yellow { background: #fff59d !important; border-left-color: #f9a825 !important; color: #6d4c00 !important; }
     .opt-plain  { background: #eceff1 !important; border-left-color: #9e9e9e !important; color: #263238 !important; }
 
-    .opt-card b { color: #000; }
+    .opt-card b { color: inherit; }
     .opt-tag {
         font-weight: 700;
         margin-left: 8px;
         font-size: 0.9em;
     }
-    div[data-testid="stCheckbox"] { min-height: 0 !important; }
+
+    /* ===== ТЁМНАЯ ТЕМА ===== */
+    @media (prefers-color-scheme: dark) {
+        .opt-card,
+        div[data-testid="stCheckbox"] {
+            background: #2b2f36 !important;
+            color: #e6e6e6 !important;
+            border-left-color: #616161 !important;
+        }
+        div[data-testid="stCheckbox"] label,
+        div[data-testid="stCheckbox"] label p,
+        div[data-testid="stCheckbox"] p {
+            color: #e6e6e6 !important;
+        }
+
+        /* Приглушённые акценты для тёмной темы */
+        .opt-green  { background: #1b3a20 !important; border-left-color: #66bb6a !important; color: #b9f6ca !important; }
+        .opt-red    { background: #3a1b1b !important; border-left-color: #ef5350 !important; color: #ffcdd2 !important; }
+        .opt-yellow { background: #3a331a !important; border-left-color: #fbc02d !important; color: #fff59d !important; }
+        .opt-plain  { background: #2b2f36 !important; border-left-color: #616161 !important; color: #e6e6e6 !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
