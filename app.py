@@ -34,30 +34,24 @@ st.markdown("""
     h1, h2, h3 { margin-top: 0.4em; }
     .block-container { padding-top: 2rem; }
 
-    /* ===== Убираем все «родные» отступы Streamlit вокруг чекбоксов ===== */
+    /* ==========================================
+       ДО ОТВЕТА: Стилизация чекбоксов под карточки
+       ========================================== */
+    
+    /* 1. Контейнер чекбокса занимает всю ширину */
     div[data-testid="stCheckbox"] {
         width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: transparent !important;
-        border: none !important;
+        display: block !important;
     }
-    /* Внутренние обёртки чекбокса — тоже без отступов */
-    div[data-testid="stCheckbox"] > div,
-    div[data-testid="stCheckbox"] > div > div {
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: transparent !important;
-    }
-    /* Сам label — это и будет наша карточка */
+
+    /* 2. Сама кликабельная область (label) становится карточкой */
     div[data-testid="stCheckbox"] label {
         display: flex !important;
         align-items: center !important;
-        width: 100% !important;
+        width: 100% !important; /* Растягиваем на всю ширину */
         box-sizing: border-box !important;
         padding: 12px 16px !important;
-        margin: 0 0 8px 0 !important;      /* ← единый отступ между вариантами */
+        margin: 0 0 8px 0 !important;
         border-radius: 10px !important;
         border-left: 6px solid #9e9e9e !important;
         background: #eceff1 !important;
@@ -65,8 +59,10 @@ st.markdown("""
         font-size: 1rem !important;
         line-height: 1.4 !important;
         cursor: pointer !important;
+        transition: background 0.2s;
     }
-    /* Текст внутри label */
+
+    /* Убираем лишние отступы у текста внутри */
     div[data-testid="stCheckbox"] label p,
     div[data-testid="stCheckbox"] label span {
         color: inherit !important;
@@ -75,12 +71,20 @@ st.markdown("""
         padding: 0 !important;
     }
 
-    /* ===== HTML-карточка (после ответа) — те же параметры ===== */
+    /* Убираем стандартные отступы Streamlit, из-за которых появляются зазоры */
+    div[data-testid="stCheckbox"] > div {
+        width: 100% !important;
+    }
+
+
+    /* ==========================================
+       ПОСЛЕ ОТВЕТА: HTML-карточки
+       ========================================== */
     .opt-card {
         width: 100% !important;
         box-sizing: border-box !important;
         padding: 12px 16px !important;
-        margin: 0 0 8px 0 !important;      /* ← тот же отступ */
+        margin: 0 0 8px 0 !important; /* Такой же отступ, как у чекбоксов */
         border-radius: 10px !important;
         border-left: 6px solid #9e9e9e !important;
         background: #eceff1 !important;
@@ -101,16 +105,9 @@ st.markdown("""
     .opt-yellow { background: #fff59d !important; border-left-color: #f9a825 !important; color: #6d4c00 !important; }
     .opt-plain  { background: #eceff1 !important; border-left-color: #9e9e9e !important; color: #263238 !important; }
 
-    /* Убираем лишний пустой блок, который иногда вставляет Streamlit */
-    div[data-testid="stCheckbox"] + div[data-testid="stVerticalBlockBorderWrapper"],
-    div[data-testid="stCheckbox"] + div[data-testid="stVerticalBlock"] {
-        display: none !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* ===== ТЁМНАЯ ТЕМА ===== */
+    /* ==========================================
+       ТЁМНАЯ ТЕМА
+       ========================================== */
     @media (prefers-color-scheme: dark) {
         div[data-testid="stCheckbox"] label,
         .opt-card {
@@ -118,6 +115,7 @@ st.markdown("""
             color: #e6e6e6 !important;
             border-left-color: #616161 !important;
         }
+        
         .opt-green  { background: #1b3a20 !important; border-left-color: #66bb6a !important; color: #b9f6ca !important; }
         .opt-red    { background: #3a1b1b !important; border-left-color: #ef5350 !important; color: #ffcdd2 !important; }
         .opt-yellow { background: #3a331a !important; border-left-color: #fbc02d !important; color: #fff59d !important; }
