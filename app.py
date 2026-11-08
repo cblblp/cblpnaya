@@ -21,7 +21,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------
-# CSS — аккуратный вид, крупные кнопки
+# CSS — аккуратный вид, крупные кнопки, цветные плашки
 # ---------------------------------------------------------------
 st.markdown("""
 <style>
@@ -36,6 +36,36 @@ st.markdown("""
     }
     h1, h2, h3 { margin-top: 0.4em; }
     .block-container { padding-top: 2rem; }
+
+    /* Цветные плашки для разбора */
+    .opt-row {
+        padding: 8px 12px;
+        margin: 6px 0;
+        border-radius: 8px;
+        border-left: 6px solid transparent;
+        line-height: 1.35;
+    }
+    .opt-green {
+        background: #e8f5e9;
+        border-left-color: #2e7d32;
+    }
+    .opt-red {
+        background: #ffebee;
+        border-left-color: #c62828;
+    }
+    .opt-yellow {
+        background: #fff8e1;
+        border-left-color: #f9a825;
+    }
+    .opt-plain {
+        background: #f5f5f5;
+        border-left-color: #9e9e9e;
+    }
+    .opt-tag {
+        font-weight: 600;
+        margin-left: 6px;
+        font-size: 0.9em;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -48,7 +78,7 @@ def init_state():
         "theme_key": None,
         "questions": [],
         "idx": 0,
-        "answers": {},            # {idx: set(индексов)}
+        "answers": {},
         "show_feedback": False,
         "shuffle_opts": True,
         "shuffle_q": True,
@@ -109,6 +139,45 @@ def start_all():
     st.session_state.show_feedback = False
     st.session_state.page = "quiz"
     st.rerun()
+
+
+# ---------------------------------------------------------------
+# ЦВЕТНОЙ РАЗБОР ВАРИАНТОВ
+# ---------------------------------------------------------------
+def render_options_feedback(q, user_ans):
+    """
+    Рисует варианты ответа с цветовой разметкой:
+    - зелёный: выбран и правильный
+    - красный: выбран, но неправильный
+    - жёлтый: правильный, но не выбран
+    - серый: нейтральный
+    """
+    correct = q["ans"]
+    for i, opt in enumerate(q["opts"]):
+        letter = LETTERS[i]
+        chosen = i in user_ans
+        is_correct = i in correct
+
+        if chosen and is_correct:
+            css = "opt-green"
+            tag = "✅ выбрано верно"
+        elif chosen and not is_correct:
+            css = "opt-red"
+            tag = "✘ ваш ошибочный"
+        elif is_correct and not chosen:
+            css = "opt-yellow"
+            tag = "✔ правильный (не выбран)"
+        else:
+            css = "opt-plain"
+            tag = ""
+
+        html = (
+            f'<div class="opt-row {css}">'
+            f'<b>{letter})</b> {opt}'
+            f'<span class="opt-tag">{tag}</span>'
+            f'</div>'
+        )
+        st.markdown(html, unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------
@@ -177,7 +246,6 @@ def render_quiz():
 
     q = qs[idx]
 
-    # --- Шапка ---
     theme_title = (
         "Все темы подряд"
         if st.session_state.theme_key == "__all__"
@@ -196,7 +264,6 @@ def render_quiz():
     else:
         st.markdown(f"**Вопрос {idx + 1} из {total}**")
 
-    # --- Текст вопроса ---
     st.markdown(f"### {q['q']}")
 
     current = st.session_state.answers.get(idx, set())
@@ -235,15 +302,7 @@ def render_quiz():
         else:
             st.error("❌ Неверно.")
 
-        for i, opt in enumerate(q["opts"]):
-            mark = ""
-            if i in correct and i in user_ans:
-                mark = "  ✅ выбрано верно"
-            elif i in correct:
-                mark = "  ✔ правильный"
-            elif i in user_ans:
-                mark = "  ✘ ваш ошибочный"
-            st.markdown(f"- **{LETTERS[i]})** {opt}{mark}")
+        render_options_feedback(q, user_ans)
 
         st.divider()
         if st.button("➡️ Следующий вопрос", type="primary", use_container_width=True):
@@ -283,15 +342,7 @@ def render_result():
         for n, q, user in mistakes:
             short = q["q"] if len(q["q"]) <= 80 else q["q"][:77] + "..."
             with st.expander(f"№{n + 1}. {short}"):
-                for i, opt in enumerate(q["opts"]):
-                    mark = ""
-                    if i in q["ans"] and i in user:
-                        mark = "  ✅ выбрано верно"
-                    elif i in q["ans"]:
-                        mark = "  ✔ правильный"
-                    elif i in user:
-                        mark = "  ✘ ваш ошибочный"
-                    st.markdown(f"- **{LETTERS[i]})** {opt}{mark}")
+                render_options_feedback(q, user)
     else:
         st.success("🎉 Отлично! Ни одной ошибки.")
 
