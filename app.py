@@ -34,12 +34,53 @@ st.markdown("""
     h1, h2, h3 { margin-top: 0.4em; }
     .block-container { padding-top: 2rem; }
 
-    /* ===== БАЗОВЫЙ СТИЛЬ (светлая тема) ===== */
-    .opt-card,
+    /* ===== Убираем все «родные» отступы Streamlit вокруг чекбоксов ===== */
     div[data-testid="stCheckbox"] {
-        box-sizing: border-box;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    /* Внутренние обёртки чекбокса — тоже без отступов */
+    div[data-testid="stCheckbox"] > div,
+    div[data-testid="stCheckbox"] > div > div {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    /* Сам label — это и будет наша карточка */
+    div[data-testid="stCheckbox"] label {
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
         padding: 12px 16px !important;
-        margin: 6px 0 !important;
+        margin: 0 0 8px 0 !important;      /* ← единый отступ между вариантами */
+        border-radius: 10px !important;
+        border-left: 6px solid #9e9e9e !important;
+        background: #eceff1 !important;
+        color: #1a1a1a !important;
+        font-size: 1rem !important;
+        line-height: 1.4 !important;
+        cursor: pointer !important;
+    }
+    /* Текст внутри label */
+    div[data-testid="stCheckbox"] label p,
+    div[data-testid="stCheckbox"] label span {
+        color: inherit !important;
+        font-size: 1rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* ===== HTML-карточка (после ответа) — те же параметры ===== */
+    .opt-card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 12px 16px !important;
+        margin: 0 0 8px 0 !important;      /* ← тот же отступ */
         border-radius: 10px !important;
         border-left: 6px solid #9e9e9e !important;
         background: #eceff1 !important;
@@ -47,18 +88,11 @@ st.markdown("""
         font-size: 1rem !important;
         line-height: 1.4 !important;
     }
-    div[data-testid="stCheckbox"] label,
-    div[data-testid="stCheckbox"] label p,
-    div[data-testid="stCheckbox"] p {
-        color: #1a1a1a !important;
-        font-size: 1rem !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    div[data-testid="stCheckbox"] > div,
-    div[data-testid="stCheckbox"] > div > div {
-        padding: 0 !important;
-        margin: 0 !important;
+    .opt-card b { color: inherit; }
+    .opt-tag {
+        font-weight: 700;
+        margin-left: 8px;
+        font-size: 0.9em;
     }
 
     /* Цвета (светлая тема) */
@@ -67,28 +101,23 @@ st.markdown("""
     .opt-yellow { background: #fff59d !important; border-left-color: #f9a825 !important; color: #6d4c00 !important; }
     .opt-plain  { background: #eceff1 !important; border-left-color: #9e9e9e !important; color: #263238 !important; }
 
-    .opt-card b { color: inherit; }
-    .opt-tag {
-        font-weight: 700;
-        margin-left: 8px;
-        font-size: 0.9em;
+    /* Убираем лишний пустой блок, который иногда вставляет Streamlit */
+    div[data-testid="stCheckbox"] + div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stCheckbox"] + div[data-testid="stVerticalBlock"] {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     /* ===== ТЁМНАЯ ТЕМА ===== */
     @media (prefers-color-scheme: dark) {
-        .opt-card,
-        div[data-testid="stCheckbox"] {
+        div[data-testid="stCheckbox"] label,
+        .opt-card {
             background: #2b2f36 !important;
             color: #e6e6e6 !important;
             border-left-color: #616161 !important;
         }
-        div[data-testid="stCheckbox"] label,
-        div[data-testid="stCheckbox"] label p,
-        div[data-testid="stCheckbox"] p {
-            color: #e6e6e6 !important;
-        }
-
-        /* Приглушённые акценты для тёмной темы */
         .opt-green  { background: #1b3a20 !important; border-left-color: #66bb6a !important; color: #b9f6ca !important; }
         .opt-red    { background: #3a1b1b !important; border-left-color: #ef5350 !important; color: #ffcdd2 !important; }
         .opt-yellow { background: #3a331a !important; border-left-color: #fbc02d !important; color: #fff59d !important; }
