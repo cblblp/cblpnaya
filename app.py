@@ -34,49 +34,53 @@ st.markdown("""
     h1, h2, h3 { margin-top: 0.4em; }
     .block-container { padding-top: 2rem; }
 
-    /* ===== ЕДИНЫЙ СТИЛЬ КАРТОЧКИ ВАРИАНТА ===== */
-    .opt-card {
-        padding: 12px 16px;
-        margin: 8px 0;
-        border-radius: 10px;
-        border-left: 6px solid #9e9e9e;
-        background: #eceff1;
-        color: #1a1a1a;
-        font-size: 1rem;
-        line-height: 1.4;
-    }
-    .opt-card b { color: #000; }
-
-    /* Цвета состояний */
-    .opt-green  { background: #c8e6c9; border-left-color: #2e7d32; color: #1b5e20; }
-    .opt-red    { background: #ffcdd2; border-left-color: #c62828; color: #b71c1c; }
-    .opt-yellow { background: #fff59d; border-left-color: #f9a825; color: #6d4c00; }
-    .opt-plain  { background: #eceff1; border-left-color: #9e9e9e; color: #263238; }
-
-    .opt-tag {
-        font-weight: 700;
-        margin-left: 8px;
-        font-size: 0.9em;
-    }
-
-    /* ===== Приводим st.checkbox к виду той же карточки ===== */
-    /* Контейнер чекбокса */
+    /* ===== ЕДИНАЯ КАРТОЧКА ВАРИАНТА ===== */
+    .opt-card,
     div[data-testid="stCheckbox"] {
+        box-sizing: border-box;
         padding: 12px 16px !important;
-        margin: 8px 0 !important;
+        margin: 6px 0 !important;        /* одинаковый шаг между карточками */
         border-radius: 10px !important;
         border-left: 6px solid #9e9e9e !important;
         background: #eceff1 !important;
         color: #1a1a1a !important;
+        font-size: 1rem !important;
+        line-height: 1.4 !important;
     }
-    /* Текст чекбокса */
-    div[data-testid="stCheckbox"] label p {
+
+    /* Текст внутри карточки-чекбокса */
+    div[data-testid="stCheckbox"] label,
+    div[data-testid="stCheckbox"] label p,
+    div[data-testid="stCheckbox"] p {
         color: #1a1a1a !important;
         font-size: 1rem !important;
-    }
-    /* Убираем лишние отступы у самого чекбокса */
-    div[data-testid="stCheckbox"] > div {
+        margin: 0 !important;
         padding: 0 !important;
+    }
+
+    /* Убираем лишние внутренние отступы Streamlit */
+    div[data-testid="stCheckbox"] > div,
+    div[data-testid="stCheckbox"] > div > div {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Убираем «распорку» — Streamlit иногда добавляет пустой блок снизу */
+    div[data-testid="stCheckbox"] + div[data-testid="stVerticalBlockBorderWrapper"] {
+        display: none !important;
+    }
+
+    /* Цвета состояний */
+    .opt-green  { background: #c8e6c9 !important; border-left-color: #2e7d32 !important; color: #1b5e20 !important; }
+    .opt-red    { background: #ffcdd2 !important; border-left-color: #c62828 !important; color: #b71c1c !important; }
+    .opt-yellow { background: #fff59d !important; border-left-color: #f9a825 !important; color: #6d4c00 !important; }
+    .opt-plain  { background: #eceff1 !important; border-left-color: #9e9e9e !important; color: #263238 !important; }
+
+    .opt-card b { color: #000; }
+    .opt-tag {
+        font-weight: 700;
+        margin-left: 8px;
+        font-size: 0.9em;
     }
 </style>
 """, unsafe_allow_html=True)
